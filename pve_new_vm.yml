@@ -44,17 +44,17 @@
         validate_certs: false
     register: vm_result
 
-    - name: Вывести информацию о созданной VM
-      debug:
-        msg: "VM {{ vm_name }} (ID: {{ vm_id }}) успешно создана"
-      when: vm_result.changed
+  - name: Вывести информацию о созданной VM
+    debug:
+      msg: "VM {{ vm_name }} (ID: {{ vm_id }}) успешно создана"
+    when: vm_result.changed
 
-    - name: Запустить виртуальную машину
-      community.general.proxmox_kvm:
+  - name: Запустить виртуальную машину
+    community.general.proxmox_kvm:
         api_host: "{{ proxmox_host }}"
         api_user: "{{ proxmox_user }}"
         api_password: "{{ proxmox_password }}"
         node: "{{ proxmox_node }}"
         vmid: "{{ vm_id }}"
         state: started
-      when: vm_result.changed
+    when: vm_result.changed
