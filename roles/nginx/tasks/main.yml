@@ -1,0 +1,59 @@
+---
+- name: Update APT package cache
+  action: apt update_cache=yes
+
+- name: Update all packages to the latest version
+  apt:
+    upgrade: dist
+
+
+- name: Install Nginx and PHP7 Server
+  action: apt pkg={{ item }} state=present
+  with_items:
+    - nginx
+#    - php7.0
+    - php7.0-fpm
+  when: ansible_distribution == 'Debian' and ansible_distribution_major_version == '9'
+
+- name: Install Nginx and PHP7 Server
+  action: apt pkg={{ item }} state=present
+  with_items:
+    - nginx
+#    - php7.3
+    - php7.3-fpm
+  when: ansible_distribution == 'Debian' and ansible_distribution_major_version == '10'
+
+- name: Install Nginx and PHP7 Server
+  action: apt pkg={{ item }} state=present
+  with_items:
+    - nginx
+#    - php7.4
+    - php7.4-fpm
+  when: ansible_distribution == 'Debian' and ansible_distribution_major_version == '11'
+
+- name: Install Nginx and PHP8 Server
+  action: apt pkg={{ item }} state=present
+  with_items:
+    - nginx
+#    - php8.2
+    - php8.2-fpm
+  when: ansible_distribution == 'Debian' and ansible_distribution_major_version == '12'
+
+- name: Create default web site directory
+  file:
+    path: /srv/www/default/www
+    state: directory
+    mode: 0755
+    owner: root
+    group: root
+
+- name: Unarchive splash page
+  unarchive:
+    src: splash.tar.gz
+    dest: /srv/www/default/www
+
+- name: Copy default nginx config
+  action: copy src=default dest=/etc/nginx/sites-available/default
+  notify: Restart nginx
+
+
