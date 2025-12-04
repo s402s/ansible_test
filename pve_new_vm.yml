@@ -20,26 +20,26 @@
     vm_ostype: "l26"  # Linux 2.6+
     
   tasks:
-   - name: createVM
-     community.general.proxmox_kvm:
-        api_host: "{{ proxmox_host }}"
-        api_user: "{{ proxmox_user }}"
-        api_password: "{{ proxmox_password }}"
-        node: "{{ proxmox_node }}"
-        vmid: "{{ vm_id }}"
-        name: "{{ vm_name }}"
-        memory: "{{ vm_memory }}"
-        cores: "{{ vm_cores }}"
-        sockets: "{{ vm_sockets }}"
-        ostype: "{{ vm_ostype }}"
-        net:
-          net0: "virtio,bridge={{ vm_network_bridge }}"
-        virtio:
-          virtio0: "{{ vm_storage }}:{{ vm_disk_size }}"
-        bootdisk: "virtio0"
-        boot: "cdn"
-        onboot: true
-        agent: true
-        state: present
-        validate_certs: false
-     register: vm_result
+  - name: createVM
+    community.general.proxmox_kvm:
+       api_host: "{{ proxmox_host }}"
+       api_user: "{{ proxmox_user }}"
+       api_password: "{{ proxmox_password }}"
+       node: "{{ proxmox_node }}"
+       vmid: "{{ vm_id }}"
+       name: "{{ vm_name }}"
+       memory: "{{ vm_memory }}"
+       cores: "{{ vm_cores }}"
+       sockets: "{{ vm_sockets }}"
+       ostype: "{{ vm_ostype }}"
+       net:
+         net0: "virtio,bridge={{ vm_network_bridge }}"
+       virtio:
+         virtio0: "{{ vm_storage }}:{{ vm_disk_size }}"
+       bootdisk: "virtio0"
+       boot: "cdn"
+       onboot: true
+       agent: true
+       state: present
+       validate_certs: false
+    register: vm_result
