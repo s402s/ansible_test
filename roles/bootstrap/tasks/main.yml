@@ -1,0 +1,103 @@
+---
+  - name: Update APT package cache
+    action: apt update_cache=yes
+
+  - name: Upgrade all packages to the latest version
+    apt:
+      upgrade: dist
+
+  - name: Install common packages (Debian 12/13)
+    apt:
+      pkg:
+        - sudo
+        - fail2ban
+        - mc
+        - htop
+        - screen
+        - acl
+        - dmidecode
+        - psmisc
+        - net-tools
+        - apt-transport-https
+        - pigz
+        - pbzip2
+        - dnsutils
+        - sysstat
+        - iotop
+        - curl
+        - wget
+        - ethtool
+      state: present
+
+  - name: Install time sync packages on Debian 12
+    apt:
+      pkg:
+        - ntp
+        - ntpdate
+      state: present
+    when: ansible_distribution_major_version | int == 12
+
+  - name: Install time sync package on Debian 13
+    apt:
+      pkg:
+        - systemd-timesyncd
+      state: present
+    when: ansible_distribution_major_version | int == 13
+
+  - name: Install GnuPG on Debian 12
+    apt:
+      pkg: gnupg2
+      state: present
+    when: ansible_distribution_major_version | int == 12
+
+  - name: Install GnuPG on Debian 13
+    apt:
+      pkg: gnupg
+      state: present
+    when: ansible_distribution_major_version | int == 13
+
+  - name: Add deployment user
+    user: 
+      name: agrg_deploy
+      password: "{{deploy_password}}"
+      shell: /bin/bash
+
+  - name: Add authorized deploy key for sysadm1n@ansible
+    authorized_key:
+      user: agrg_deploy 
+      state: present
+      key: "{{ lookup('file', 'id_rsa.pub') }}" 
+
+  - name: Add authorized deploy key for root@ansible
+    authorized_key:
+      user: agrg_deploy
+      state: present
+      key: "{{ lookup('file', '/root/.ssh/id_rsa.pub') }}" 
+
+  - name: Remove sudo group rights
+    action: lineinfile dest=/etc/sudoers regexp="^%sudo" state=absent
+
+  - name: Add deploy user to sudoers
+#    action: lineinfile dest=/etc/sudoers regexp="agrg_deploy ALL" line="agrg_deploy ALL=(ALL) ALL" state=present
+    action: lineinfile dest=/etc/sudoers regexp="agrg_deploy ALL" line="agrg_deploy ALL=(ALL) NOPASSWD:ALL" state=present
+
+  - name: Disallow root SSH access
+    action: lineinfile dest=/etc/ssh/sshd_config regexp="^PermitRootLogin" line="PermitRootLogin no" state=present
+#    notify: Restart sshd
+
+  - name: Disallow protocol 1 in  SSH
+    action: lineinfile dest=/etc/ssh/sshd_config regexp="^Protocol" line="Protocol 2" state=present
+    notify: Restart sshd
+
+  - name: Install unattended-upgrades
+    action: apt pkg=unattended-upgrades state=present
+  
+  - name: Adjust APT update intervals
+    action: copy src=apt_periodic dest=/etc/apt/apt.conf.d/10periodic mode=0644
+
+  - sysctl:
+      name: net.ipv4.tcp_timestamps
+      value: '0'
+      sysctl_set: yes
+      state: present
+      reload: yes
