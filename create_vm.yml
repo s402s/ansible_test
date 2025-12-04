@@ -1,0 +1,64 @@
+---
+- name: Provision a new VM in Proxmox from a template
+  hosts: localhost
+  connection: local
+  gather_facts: no
+
+  # Define variables for Proxmox connection and VM configuration
+  vars:
+    # Proxmox API Connection Details
+    proxmox_host: "your_proxmox_host_or_ip"
+    proxmox_user: "ansible_user@pam" # e.g., root@pam or a dedicated API user
+    proxmox_password: "your_api_password"
+    proxmox_node: "pve-node-01" # The Proxmox node where the VM will be created
+
+    # New VM Configuration
+    new_vm_name: "new-ansible-vm"
+    new_vm_id: 900 # A unique VMID (optional, Proxmox can assign one)
+    template_name: "ubuntu-cloud-template" # The name of the template/source VM to clone from
+    storage_pool: "local-lvm" # The storage pool for the new VM disk
+
+    # VM Hardware Configuration (optional, will inherit from template if not set)
+    vm_cores: 2
+    vm_memory: 2048 # in MB
+
+  tasks:
+    - name: Install community.proxmox collection if not present (requires internet access)
+      ansible.builtin.command: ansible-galaxy collection install community.proxmox
+      changed_when: true
+      ignore_errors: yes
+      run_once: true
+
+    - name: Clone VM from template and configure
+      community.proxmox.proxmox_kvm:
+        api_host: "{{ proxmox_host }}"
+        api_user: "{{ proxmox_user }}"
+        api_password: "{{ proxmox_password }}"
+        node: "{{ proxmox_node }}"
+        name: "{{ new_vm_name }}"
+        vmid: "{{ new_vm_id }}"
+        clone: "{{ template_name }}"
+        storage: "{{ storage_pool }}"
+        cores: "{{ vm_cores }}"
+        memory: "{{ vm_memory }}"
+        state: present # Ensures the VM exists
+        full: yes # Use full clone (independent disk)
+        # Optional: Uncomment and configure network and cloud-init settings here
+        # net0: "model=virtio,bridge=vmbr0"
+        # ipconfig0: "ip=192.168.1.100/24,gw=192.168.1.1"
+        # ciuser: "ansible"
+        # cipassword: "securepassword"
+        # sshkeys: "ssh-rsa AAAA..."
+      delegate_to: localhost
+      register: vm_creation_result
+
+    - name: Start the newly created VM
+      community.proxmox.proxmox_kvm:
+        api_host: "{{ proxmox_host }}"
+        api_user: "{{ proxmox_user }}"
+        api_password: "{{ proxmox_password }}"
+        node: "{{ proxmox_node }}"
+        vmid: "{{ new_vm_id }}"
+        state: started
+      when: vm_creation_result is changed
+      delegate_to: localhost
