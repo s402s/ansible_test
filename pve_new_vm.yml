@@ -45,7 +45,7 @@
     register: vm_result
 
   - name: Вывести информацию о созданной VM
-     debug:
+    debug:
       msg: "VM {{ vm_name }} (ID: {{ vm_id }}) успешно создана"
      when: vm_result.changed
 
