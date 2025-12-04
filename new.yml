@@ -1,0 +1,7 @@
+---
+- hosts: '{{ target }}'
+  vars:
+    ansible_user: '{{ user }}'
+    ansible_become: true
+  roles:
+    - bootstrap
