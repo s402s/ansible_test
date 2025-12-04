@@ -1,0 +1,11 @@
+---
+- hosts: gw.mes.intra
+  roles:
+    - hostname
+    - nginx
+#    - zabbix-client6
+    - virtual
+    - firewall
+#    - zabbix-proxy6
+    - dhcp-server
+    - openvpn
