@@ -4,7 +4,7 @@
 #    - hostname
 #    - nginx
 #    - zabbix-client6
-    - virtual
+#    - virtual
     - firewall
 #    - zabbix-proxy6
     - dhcp-server
