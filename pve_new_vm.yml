@@ -44,7 +44,7 @@
         validate_certs: false
     register: vm_result
 
-   - name: Вывести информацию о созданной VM
+  - name: Вывести информацию о созданной VM
      debug:
       msg: "VM {{ vm_name }} (ID: {{ vm_id }}) успешно создана"
      when: vm_result.changed
