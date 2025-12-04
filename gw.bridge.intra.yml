@@ -2,7 +2,7 @@
 - hosts: gw.bridge.intra
   roles:
 #    - hostname
-    - nginx
+#    - nginx
 #    - zabbix-client6
     - virtual
     - firewall
