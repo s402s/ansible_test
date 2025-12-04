@@ -20,7 +20,7 @@
     vm_ostype: "l26"  # Linux 2.6+
     
   tasks:
-    - name: createVM
+  - name: createVM
       community.general.proxmox_kvm:
         api_host: "{{ proxmox_host }}"
         api_user: "{{ proxmox_user }}"
