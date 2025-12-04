@@ -20,8 +20,8 @@
     vm_ostype: "l26"  # Linux 2.6+
     
   tasks:
-    - name: Создание виртуальной машины
-      community.general.proxmox_kvm:
+  - name: Создание виртуальной машины
+    community.general.proxmox_kvm:
         api_host: "{{ proxmox_host }}"
         api_user: "{{ proxmox_user }}"
         api_password: "{{ proxmox_password }}"
@@ -42,4 +42,4 @@
         agent: true
         state: present
         validate_certs: false
-      register: vm_result
+    register: vm_result
