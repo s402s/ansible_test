@@ -50,7 +50,7 @@
       when: vm_result.changed
 
   - name: Запустить виртуальную машину
-     community.general.proxmox_kvm:
+    community.general.proxmox_kvm:
         api_host: "{{ proxmox_host }}"
         api_user: "{{ proxmox_user }}"
         api_password: "{{ proxmox_password }}"
