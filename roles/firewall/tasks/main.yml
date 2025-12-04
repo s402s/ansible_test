@@ -1,0 +1,25 @@
+---
+  - name: Update APT package cache
+    action: apt update_cache=yes
+
+  - name: Upgrade all packages to the latest version
+    apt:
+      upgrade: dist
+
+  - name: Install packages
+    action: apt pkg={{ item }} state=present
+    with_items: 
+        - vlan
+        - ethtool
+        - net-tools
+        - logwatch
+        - bridge-utils
+        - nmap
+        - arping
+        - shorewall
+#        - shorewall6
+        - pdns-recursor
+#        - ntopng
+#        - ntopng-data
+
+
