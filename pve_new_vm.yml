@@ -1,45 +1,44 @@
 ---
-- name: Создание виртуальной машины в Proxmox
+- name: Create VM on Proxmox
   hosts: localhost
-  gather_facts: false
-  
+  gather_facts: no
+  collections:
+    - community.general
+
   vars:
-    proxmox_host: "10.111.2.117"
-    proxmox_user: "root@pam"
-    proxmox_password: "1qazxcvbnm"
-    proxmox_node: "pve01"
-    
-    vm_id: 1001
-    vm_name: "test-vm"
-    vm_memory: 2048
+    proxmox_api_host: "10.111.2.117"
+    proxmox_api_user: "root@pam"
+    proxmox_api_token_id: "root@pam!ansible"
+    proxmox_api_token_secret: "142f8ad5-9fb7-4e92-9a54-7d724fa9ee00"
+    node: "pve01"
+
+    vm_id: 101
+    vm_name: "ansible-test-vm"
     vm_cores: 2
-    vm_sockets: 1
-    vm_disk_size: "32G"
+    vm_memory: 4096      # MB
+    vm_disk_size: 20G
     vm_storage: "local-zfs"
-    vm_network_bridge: "vmbr0"
-    vm_ostype: "l26"  # Linux 2.6+
-    
+    vm_iso_storage: "local"
+    vm_iso: "iso/debian-13.2.0-amd64-netinst.iso"
+
   tasks:
-  - name: Создание виртуальной машины
-    community.general.proxmox_kvm:
-        api_host: "{{ proxmox_host }}"
-        api_user: "{{ proxmox_user }}"
-        api_password: "{{ proxmox_password }}"
-        node: "{{ proxmox_node }}"
+    - name: Create VM
+      proxmox_kvm:
+        api_host: "{{ proxmox_api_host }}"
+        api_user: "{{ proxmox_api_user }}"
+        api_token_id: "{{ proxmox_api_token_id }}"
+        api_token_secret: "{{ proxmox_api_token_secret }}"
+        node: "{{ node }}"
         vmid: "{{ vm_id }}"
         name: "{{ vm_name }}"
         memory: "{{ vm_memory }}"
         cores: "{{ vm_cores }}"
-        sockets: "{{ vm_sockets }}"
-        ostype: "{{ vm_ostype }}"
-        net:
-          net0: "virtio,bridge={{ vm_network_bridge }}"
-        virtio:
-          virtio0: "{{ vm_storage }}:{{ vm_disk_size }}"
-        bootdisk: "virtio0"
+        sockets: 1
+        scsihw: virtio-scsi-pci
+        ostype: l26
         boot: "cdn"
-        onboot: true
-        agent: true
+        ide2: "{{ vm_iso_storage }}:{{ vm_iso }},media=cdrom"
+        sata0: "{{ vm_storage }}:{{ vm_disk_size }}"
+        net0: "virtio,bridge=vmbr0"
         state: present
-        validate_certs: false
-    register: vm_result
+        onboot: true
