@@ -42,7 +42,7 @@
         agent: true
         state: present
         validate_certs: false
-      register: vm_result
+    register: vm_result
 
     - name: Вывести информацию о созданной VM
       debug:
