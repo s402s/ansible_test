@@ -1,18 +1,60 @@
- - name: Create the VM
-      ansible.builtin.uri:
-        url: "https://{{ api_host }}:8006/api2/json/nodes/{{ node }}/qemu"
-        method: POST
-        headers:
-          Authorization: "{{ proxmox_auth_cookie }}"
-        body:
-          vmid: "{{ next_id_response.json.data }}"
-          name: 'test'
-          storage: "{{ storage }}"
-          cores: 6
-          cpu: 'x86-64-v2-AES'
-          memory: 16384
-          bios: 'ovmf'
-          sata0: "{{ storage }}:0,import-from={{ storage }}:888/test.vmdk"
-          efidisk0: "{{ storage }}:1" # 0 to allow import-from
-        body_format: json
-        status_code: 200
+---
+- name: Создание виртуальной машины в Proxmox
+  hosts: localhost
+  gather_facts: false
+  
+  vars:
+    proxmox_host: "10.111.2.117"
+    proxmox_user: "root@pam"
+    proxmox_password: "1qazxcvbnm"
+    proxmox_node: "pve01"
+    
+    vm_id: 1001
+    vm_name: "test-vm"
+    vm_memory: 2048
+    vm_cores: 2
+    vm_sockets: 1
+    vm_disk_size: "32G"
+    vm_storage: "local-zfs"
+    vm_network_bridge: "vmbr0"
+    vm_ostype: "l26"  # Linux 2.6+
+    
+  tasks:
+    - name: Создать виртуальную машину
+      community.general.proxmox_kvm:
+        api_host: "{{ proxmox_host }}"
+        api_user: "{{ proxmox_user }}"
+        api_password: "{{ proxmox_password }}"
+        node: "{{ proxmox_node }}"
+        vmid: "{{ vm_id }}"
+        name: "{{ vm_name }}"
+        memory: "{{ vm_memory }}"
+        cores: "{{ vm_cores }}"
+        sockets: "{{ vm_sockets }}"
+        ostype: "{{ vm_ostype }}"
+        net:
+          net0: "virtio,bridge={{ vm_network_bridge }}"
+        virtio:
+          virtio0: "{{ vm_storage }}:{{ vm_disk_size }}"
+        bootdisk: "virtio0"
+        boot: "cdn"
+        onboot: true
+        agent: true
+        state: present
+        validate_certs: false
+      register: vm_result
+
+    - name: Вывести информацию о созданной VM
+      debug:
+        msg: "VM {{ vm_name }} (ID: {{ vm_id }}) успешно создана"
+      when: vm_result.changed
+
+    - name: Запустить виртуальную машину
+      community.general.proxmox_kvm:
+        api_host: "{{ proxmox_host }}"
+        api_user: "{{ proxmox_user }}"
+        api_password: "{{ proxmox_password }}"
+        node: "{{ proxmox_node }}"
+        vmid: "{{ vm_id }}"
+        state: started
+      when: vm_result.changed
