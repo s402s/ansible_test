@@ -1,0 +1,36 @@
+---
+    - name: Change the hostname to our standard
+      hostname:
+        name="{{ hostname_custom }}"
+      when:
+        ansible_fqdn != hostname_custom
+
+    - name: Reboot if hostname was changed
+      reboot:
+        msg: "Reboot after hostname change"
+        connect_timeout: 5
+        reboot_timeout: 600
+        pre_reboot_delay: 0
+        post_reboot_delay: 15
+      when: ansible_fqdn != hostname_custom
+
+    - name: Refresh facts
+      setup:
+
+    - name: Fix /etc/hosts removing the old hostname
+      tags:
+        - hosts
+      lineinfile:
+        state=present
+        dest=/etc/hosts
+        line="{{ ansible_default_ipv4.address }} {{ hostname_custom }} {{ hostname_custom.split('.')[0] }}"
+        regexp="^{{ ansible_default_ipv4.address }}"
+      when:
+        ansible_fqdn != inventory_hostname
+
+    - name: Validate ansible_fqdn == hostname_custom
+      tags:
+        - validate
+      assert:
+        that:
+          ansible_fqdn == hostname_custom
