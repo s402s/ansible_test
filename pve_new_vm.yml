@@ -57,4 +57,4 @@
         node: "{{ proxmox_node }}"
         vmid: "{{ vm_id }}"
         state: started
-     when: vm_result.changed
+    when: vm_result.changed
