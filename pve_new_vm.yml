@@ -49,7 +49,7 @@
       msg: "VM {{ vm_name }} (ID: {{ vm_id }}) успешно создана"
       when: vm_result.changed
 
-   - name: Запустить виртуальную машину
+  - name: Запустить виртуальную машину
      community.general.proxmox_kvm:
         api_host: "{{ proxmox_host }}"
         api_user: "{{ proxmox_user }}"
