@@ -1,6 +1,10 @@
 ---
 - hosts: gw.bridge.intra
+  vars:
+    ansible_user: 'sysadm1n'
+    ansible_become: true
   roles:
+    - bootstrap
 #    - hostname
 #    - nginx
 #    - zabbix-client6
